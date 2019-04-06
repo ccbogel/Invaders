@@ -8,17 +8,18 @@ Game inspired from pyqt5 code snippet from Roger Allen
 https://gist.github.com/rogerallen/f06ba704ce3befb5459239e3fdf842c7
 '''
 
-from PyQt5.QtCore import (Qt, QBasicTimer)
-from PyQt5.QtGui import (QBrush, QColor, QPainter, QPixmap, QImage, QFontDatabase, QFont, QPen)
-from PyQt5.QtWidgets import (QMainWindow, qApp, QApplication, QGraphicsItem, QGraphicsScene,
-        QGraphicsView, QGraphicsPixmapItem,  QGraphicsTextItem, QInputDialog, QLineEdit)
-from GUI.main import Ui_MainWindow
+import platform
 import random
 import subprocess
 import time
 
-#SCREEN_WIDTH            = 800
-#SCREEN_HEIGHT           = 600
+from PyQt5.QtCore import (Qt, QBasicTimer)
+from PyQt5.QtGui import (QBrush, QColor, QPainter, QPixmap, QImage, QFontDatabase, QFont, QPen)
+from PyQt5.QtWidgets import (QMainWindow, qApp, QApplication, QGraphicsScene,
+    QGraphicsView, QGraphicsPixmapItem,  QGraphicsTextItem, QInputDialog, QLineEdit)
+
+from GUI.main import Ui_MainWindow
+
 PLAYER_SPEED = 5   # pix/frame
 PLAYER_BULLET_X_OFFSET = 15  # half width of bullet
 PLAYER_BULLET_Y = 5
@@ -28,6 +29,12 @@ ENEMY_BULLET_X_OFFSET = 15  # half width of bullet
 EXPLOSION_FRAMES = 2
 FRAME_TIME_MS = 16  # ms/frame
 MAIN_TEXT = "Alien Invaders\n\nN for new game\n\nSpace to Shoot\n\nLeft Right Up Down arrows to move\n\nBonus Items: Shield, Slow Alien Descent, Instant Destruct\n\nTry and avoid the Alien Transports\n\nBeware of the UFOs\n\nDo not let the Aliens land\n"
+
+sound_call = "aplay"  # default Linux
+if platform.system() == "Windows":
+    sound_call = "start"
+if platform.system() == "Darwin":
+    sound_call = "afplay"
 
 
 class Scene(QGraphicsScene):
@@ -114,7 +121,7 @@ class Scene(QGraphicsScene):
             if self.msg.frames > 0:
                 self.msg.game_update()
             else:
-              self.end_of_game_part_2()
+                self.end_of_game_part_2()
             return
 
         # update player moves and bullets
@@ -172,8 +179,8 @@ class Scene(QGraphicsScene):
             hits = self.collidingItems(b)
             # direct enemy hit
             if hits != [] and type(hits[0]).__name__ == "Enemy":
-                #subprocess.Popen(["aplay", "Sounds/NFF-robo-hit.wav"])  # windows replace aplay with start
-                subprocess.Popen(["aplay", "Sounds/NFF-bump.wav"])  # windows replace aplay with start
+                #subprocess.Popen([sound_call, "Sounds/NFF-robo-hit.wav"])
+                subprocess.Popen([sound_call, "Sounds/NFF-bump.wav"])
                 b.hit_enemy(hits[0])
                 if hits[0].hp == 0:
                     self.score += hits[0].score
@@ -257,7 +264,7 @@ class Scene(QGraphicsScene):
         ''' All enemies defeated, new wave created.
         Add two extra enemies at each higher wave '''
 
-        p = subprocess.Popen(["aplay", "Sounds/NFF-alert.wav"])
+        p = subprocess.Popen([sound_call, "Sounds/NFF-alert.wav"])
         p.communicate()
         self.wave += 1
         items = self.items()
@@ -400,7 +407,7 @@ class Scene(QGraphicsScene):
 
 
 class FadeMessage(QGraphicsTextItem):
-    ''' Text is set using setPlainText method '''
+    ''' Text is set using setPlainText method. '''
 
     frames = 255
 
@@ -621,7 +628,7 @@ class EnemyBullet(QGraphicsPixmapItem):
         self.bullet_speed = 4
 
     def game_update(self):
-        ''' Could not get QSound or QSoundEffect to work, using subprocess '''
+        ''' '''
         if self.active:
             self.y += self.bullet_speed
             self.setPos(self.x, self.y)
@@ -633,7 +640,7 @@ class EnemyBullet(QGraphicsPixmapItem):
 
 
 class BonusItem(QGraphicsPixmapItem):
-    ''' Curently 1 different type of Item '''
+    ''' Several different bonus items. '''
 
     def __init__(self, scr_w, scr_h, parent=None):
         QGraphicsPixmapItem.__init__(self, parent)
@@ -727,13 +734,13 @@ class BonusItem(QGraphicsPixmapItem):
 
         if self.name == "Alien transport":
             self.active = False
-            subprocess.Popen(["aplay", "Sounds/NFF-alien-02.wav"])  # windows replace aplay with start
+            subprocess.Popen([sound_call, "Sounds/NFF-alien-02.wav"])
 
         if self.name == "flare":
             if self.effect_pic_set is False:
                 self.setPixmap(self.flare)
                 self.effect_pic_set = True
-                subprocess.Popen(["aplay", "Sounds/NFF-glittering.wav"])  # windows replace aplay with start
+                subprocess.Popen([sound_call, "Sounds/NFF-glittering.wav"])
             self.setPos(self.x() - self.flareoffsets[0], self.y() - self.flareoffsets[1])
             self.flareoffsets = [0, 0]  # initial offset to position flare over original pixmap
             # resize gradually
@@ -753,7 +760,7 @@ class BonusItem(QGraphicsPixmapItem):
             if self.effect_pic_set is False:
                 self.setPixmap(self.shield0)
                 self.effect_pic_set = True
-                subprocess.Popen(["aplay", "Sounds/NFF-ufo.wav"])  # windows replace aplay with start
+                subprocess.Popen([sound_call, "Sounds/NFF-ufo.wav"])
 
         if self.name == "slowed":
             if self.effect_pic_set is False:
@@ -761,7 +768,7 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPixmap(self.slowed[0])
                 self.setPos(self.x() - self.slowed[0].width() / 2, self.y() - self.slowed[0].height() / 2)
                 self.counter = 0
-                subprocess.Popen(["aplay", "Sounds/NFF-shooting-star-02.wav"])  # windows replace aplay with start
+                subprocess.Popen([sound_call, "Sounds/NFF-shooting-star-02.wav"])
                 return
             self.counter += 1
             if self.counter >= len(self.slowed):
@@ -783,7 +790,7 @@ class BonusItem(QGraphicsPixmapItem):
 
 
 class Player(QGraphicsPixmapItem):
-    ''' Set up player half way across and almost on bottom of scene '''
+    ''' Set up player half way across and almost on bottom of scene. '''
 
     def __init__(self, scr_w, scr_h, parent=None):
         QGraphicsPixmapItem.__init__(self, parent)
@@ -832,7 +839,7 @@ class Bullet(QGraphicsPixmapItem):
         ''' Could not get QSound or QSoundEffect to work, using subprocess '''
         if not self.active:
             if Qt.Key_Space in keys_pressed:
-                subprocess.Popen(["aplay", "Sounds/tir.wav"])  # windows replace aplay with start
+                subprocess.Popen([sound_call, "Sounds/tir.wav"])
                 self.setVisible(True)
                 self.active = True
                 self.setPos(player.x() + player.pixmap().width()/2 - self.offset_x, player.y() + self.offset_y)
@@ -890,8 +897,6 @@ class MainWindow(QMainWindow):
         self.ui.graphicsView.setCacheMode(QGraphicsView.CacheBackground)
         self.ui.graphicsView.setViewportUpdateMode(QGraphicsView.BoundingRectViewportUpdate)
         self.ui.graphicsView.hide()
-        #self.ui.label.setText("")
-
         self.show()
 
     def keyPressEvent(self, event):
