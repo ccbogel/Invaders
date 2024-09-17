@@ -32,7 +32,6 @@ class Scene(QGraphicsScene):
     def __init__(self, width, height, parent=None):
         QGraphicsScene.__init__(self, parent)
 
-        if TEST: print("Scene init  - start")
         self.setSceneRect(0, 0, width, height)
         self.player_hit = False
         self.score_item = None
@@ -54,12 +53,9 @@ class Scene(QGraphicsScene):
         self.timer = QBasicTimer()
         self.timer.start(FRAME_TIME_MS, self)
         self.new_game()
-        if TEST: print("Scene init done")
 
     def new_game(self):
         """ Set variables, clear score. """
-
-        if TEST: print("scene.new_game start")
 
         # Hold the set of keys that are being pressed
         self.keys_pressed = set()
@@ -77,9 +73,9 @@ class Scene(QGraphicsScene):
         self.msg = None
         self.bonuses = []
         self.bullets = [Bullet(PLAYER_BULLET_X_OFFSET, PLAYER_BULLET_Y, self.width(), self.height())]
-        for b in self.bullets:
-            b.setPos(self.width(), self.height())
-            self.addItem(b)
+        for bullet in self.bullets:
+            bullet.setPos(self.width(), self.height())
+            self.addItem(bullet)
         self.addItem(self.player)
         self.enemy_wave_setup()
 
@@ -91,8 +87,9 @@ class Scene(QGraphicsScene):
 
     def keyReleaseEvent(self, event):
         try:
-            self.keys_pressed.remove(event.key())
-        except:  # TODO fix bare exept
+            if self.keys_pressed:
+                self.keys_pressed.remove(event.key())
+        except KeyError:
             pass
 
     def timerEvent(self, event):
@@ -113,12 +110,13 @@ class Scene(QGraphicsScene):
 
         # Check for enemy collides with player
         for enemy in self.enemies:
-            hits = self.collidingItems(enemy)
-            if hits:
-                for hit in hits:
-                    if type(hit).__name__ == "Player":
-                        self.lost = True
-                        time.sleep(2)
+            hit_items = self.collidingItems(enemy)
+            for hit_item in hit_items:
+                if isinstance(hit_item, Player):
+                    #if type(hit).__name__ == "Player":
+                    self.lost = True
+                    time.sleep(2)
+
         # Update enemies and explosions
         for enemy in self.enemies:
             enemy.game_update()
@@ -156,74 +154,70 @@ class Scene(QGraphicsScene):
         for bullet in self.enbullets:
             bullet.game_update()
 
-        # Check for player bullet collision with Enemy or BonusItem
+        # Check for player bullet collision with ONE Enemy or BonusItem
         for bullet in self.bullets:
-            hits = self.collidingItems(bullet)
+            hit_items = self.collidingItems(bullet)
+            if not hit_items:
+                continue
+            hit_item = hit_items[0]  # Only hit ONE item
             # Enemy is hit
-            if hits and type(hits[0]).__name__ == "Enemy":
+            if hit_item and isinstance(hit_item, Enemy):
                 # subprocess.Popen(["aplay", "Sounds/NFF-robo-hit.wav"])  # windows replace aplay with start
                 # TODO subprocess.Popen(["aplay", "Sounds/NFF-bump.wav"])  # windows replace aplay with start
-                bullet.hit_enemy(hits[0])
-                if hits[0].hp == 0:
-                    self.score += hits[0].score
-                en_pos = (hits[0].pos())
+                bullet.hit_enemy(hit_item)
+                if hit_item.hp == 0:
+                    self.score += hit_item.score
+                en_pos = (hit_item.pos())
                 explode = Explosion(en_pos.x(), en_pos.y())
                 self.explosions.append(explode)
                 self.addItem(explode)
             # Hit enemy through Effects or Dreams or Flare
-            if len(hits) > 1 and type(hits[0]).__name__ == "BonusItem" and \
-                    hits[0].effect is True and hits[0].name in ("flare", "dreams") and \
-                    type(hits[1]).__name__ == "Enemy":
-                if TEST: print("Hit bonus item (flare or dreams) ", hits[0].name)
-                bullet.hit_enemy(hits[1])
+            if len(hit_items) > 1 and isinstance(hit_item, BonusItem) and \
+                    hit_item.effect is True and hit_item.name in ("flare", "dreams") and \
+                    isinstance(hit_items[1], Enemy):
+                bullet.hit_enemy(hit_items[1])
                 if hits[1].hp == 0:
-                    self.score += hits[1].score
-                en_pos = (hits[1].pos())
-                explode = Explosion(en_pos.x(), en_pos.y())
+                    self.score += hit_items[1].score
+                enemy_pos = (hit_items[1].pos())
+                explode = Explosion(enemy_pos.x(), enemy_pos.y())
                 self.explosions.append(explode)
                 self.addItem(explode)
             # Hit bonus and activate item
-            if hits != [] and type(hits[0]).__name__ == "BonusItem" and \
-                    hits[0].effect is False:
-                if TEST: print("Hit bonus item, activate item: ", hits[0].name)
-                hits[0].effect = True
-                hits[0].game_update()
+            if hit_items and isinstance(hit_item, BonusItem) and \
+                    hit_item.effect is False:
+                hit_item.effect = True
+                hit_item.game_update()
                 # An anti-bonus item if Alien transport hit
-                if hits[0].name == "Alien transport" and self.msg is None:
-                    if TEST: print("Alien transport")
+                if hit_item.name == "Alien transport" and self.msg is None:
                     for i in range(0, 5):
-                        enemy = Enemy(self.width(), self.height(), 24, hits[0].x(), hits[0].y())
+                        enemy = Enemy(self.width(), self.height(), 24, hit_item.x(), hit_item.y())
                         self.enemies.append(enemy)
                         self.addItem(enemy)
 
         # BonusItem
         for bonus in self.bonuses:
             # Check if Flare collides with Enemies
-            if TEST: print("bonus", bonus.effect, bonus.name)
-            if bonus.effect and b.name == "flare":
-                print("flare")
-                hits = self.collidingItems(bonus)
-                for hit in hits:
-                    if type(hit).__name__ == "Enemy":
-                        hit.hp = 0
-                        if hit.hp == 0:
-                            self.score += hit.score
-                        en_pos = (hit.pos())
-                        explode = Explosion(en_pos.x(), en_pos.y())
+            if bonus.effect and bonus.name == "flare":
+                hit_items = self.collidingItems(bonus)
+                for hit_item in hit_items:
+                    if isinstance(hit_item, Enemy):
+                        hit_item.hp = 0
+                        if hit_item.hp == 0:
+                            self.score += hit_item.score
+                        explosion_pos = (hit_item.pos())
+                        explode = Explosion(explosion_pos.x(), explosion_pos.y())
                         self.explosions.append(explode)
                         self.addItem(explode)
             # Check if Slowed collides with Enemies
             if bonus.effect and bonus.name == "slowed":
-                if TEST:print("Scene.game_update. if bonus.effect and bonus.name=slowed")
-                hits = self.collidingItems(bonus)
-                for hit in hits:
-                    if type(hit).__name__ == "Enemy" and hit.pos().y() > 0:
-                        hit.dy = 0.12
+                hit_items = self.collidingItems(bonus)
+                for hit_item in hit_items:
+                    if isinstance(hit_item, Enemy) and hit_item.pos().y() > 0:
+                        hit_item.dy = 0.12
                         # hit.dx = 1.2
 
             # If a shield, position it over player
             if bonus.effect and bonus.name == "shield":
-                if TEST: print("Scene.game_update shield - position over player")
                 bonus.update_to_player_pos(self.player)
 
         self.score_item.game_update(self.wave, self.score)
@@ -255,7 +249,6 @@ class Scene(QGraphicsScene):
 
         # TODO p = subprocess.Popen(["aplay", "Sounds/NFF-alert.wav"])
         # p.communicate()
-        print("sound1")
         self.wave += 1
         items = self.items()
         for item in items:
@@ -380,12 +373,10 @@ class Score(QGraphicsTextItem):
     def init(self, parent=None):
         QGraphicsTextItem.__init__(self, parent)
 
-        print("Score 0")
         self.setPlainText("Wave: 0 Score: 0")
         self.setFont(QFont("Robotica", 15))
         self.setDefaultTextColor(QColor(255, 255, 0))
         self.setPos(10, 670)
-        print("Score 1")
 
     def game_update(self, wave, score):
         self.setPlainText(f"Wave: {wave} Score: {score}")
@@ -672,7 +663,6 @@ class BonusItem(QGraphicsPixmapItem):
                 self.counter = 0
             self.setPixmap(self.pic[int(self.counter)])
             self.setPos(self.x() + self.dx, self.y() + self.dy)
-
             if self.dx > 0 and self.x() > self.scr_w:
                 self.active = False
             if self.dx < 0 and self.x() < 0:
@@ -698,21 +688,19 @@ class BonusItem(QGraphicsPixmapItem):
                 self.active = False
                 return
 
-            w = self.flarereduction / 100 * self.flare.width()
-            h = self.flarereduction / 100 * self.flare.height()
+            w = int(self.flarereduction / 100 * self.flare.width())
+            h = int(self.flarereduction / 100 * self.flare.height())
             self.flareoffsets[0] = self.flare.width() - w
             self.flareoffsets[1] = self.flare.height() - h
             self.setPixmap(self.flare.scaled(w, h, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.FastTransformation))
             self.setPos(self.x() + self.flareoffsets[0], self.y() + self.flareoffsets[1])
 
         if self.name == "shield":
-            if TEST: print("BonusItem. game_update shield item")
             if self.effect_pic_set is False:
                 self.setPixmap(self.shield0)
                 self.effect_pic_set = True
                 # Windows replace aplay with start
                 # TODO subprocess.Popen(["aplay", "Sounds/NFF-ufo.wav"])
-            if TEST: print("BonusItem. game_update shield effects enacted")
 
 
         if self.name == "slowed":
@@ -737,7 +725,7 @@ class BonusItem(QGraphicsPixmapItem):
         # print(self.frames)
         if self.frames < 1:
             self.active = False
-        self.setPos(player.x() - 25, player.y() - 25)  # magic number offsets
+        self.setPos(player.x() - 25, player.y() - 25)  # magic number offsets to centre item
         if 500 > self.frames >= 200:
             self.setPixmap(self.shield1)
         if self.frames < 200:
@@ -851,7 +839,6 @@ class MainWindow(QMainWindow):
         self.ui.graphicsView.hide()
         # self.ui.label.setText("")
         self.show()
-        if TEST: print("Main window init")
 
     def keyPressEvent(self, event):
 
@@ -873,7 +860,6 @@ class MainWindow(QMainWindow):
         # self.scene.setSceneRect(0, 0, self.view_w, self.view_h)
         self.ui.graphicsView.setScene(self.scene)
         self.ui.graphicsView.show()
-        if TEST: print("MainWindow.new_game")
 
     def exit_app(self):
 
@@ -889,7 +875,5 @@ if __name__ == '__main__':
         app.setStyleSheet(fh.read())
     screen_resolution = app.primaryScreen().geometry()
     width, height = screen_resolution.width(), screen_resolution.height()
-    if TEST: print("Main 1")
     window = MainWindow(width, height)
-    if TEST: print("Main 2")
     sys.exit(app.exec())
