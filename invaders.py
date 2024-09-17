@@ -30,10 +30,20 @@ TEST = True
 
 bump_sound_effect = QSoundEffect()
 bump_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-bump.wav"))
-bump_sound_effect.setVolume(0.8)
+#bump_sound_effect.setVolume(0.8)
 alert_sound_effect = QSoundEffect()
 alert_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-alert.wav"))
-alert_sound_effect.setVolume(0.8)
+#alert_sound_effect.setVolume(0.8)
+alien_transport_sound_effect = QSoundEffect()
+alien_transport_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-alien-02.wav"))
+glittering_sound_effect = QSoundEffect()
+glittering_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-glittering.wav"))
+shield_sound_effect = QSoundEffect()
+shield_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-ufo.wav"))
+slowed_sound_effect = QSoundEffect()
+slowed_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-shooting-star-02.wav"))
+bullet_sound_effect = QSoundEffect()
+bullet_sound_effect.setSource(QUrl.fromLocalFile("Sounds/tir.wav"))
 
 
 class Scene(QGraphicsScene):
@@ -78,7 +88,7 @@ class Scene(QGraphicsScene):
         self.addItem(self.score_item)
         self.player = Player(self.width(), self.height())
         self.enemies = []
-        self.enbullets = []
+        self.enbullets = []  # Enemey bullets
         self.msg = None
         self.bonuses = []
         self.bullets = [Bullet(PLAYER_BULLET_X_OFFSET, PLAYER_BULLET_Y, self.width(), self.height())]
@@ -270,7 +280,6 @@ class Scene(QGraphicsScene):
             enemy = Enemy(self.width(), self.height())
             self.enemies.append(enemy)
             self.addItem(enemy)
-        # time.sleep(1)
 
     def maybe_add_enbullets(self):
         """ Small chance to fire a bullet from each enemy """
@@ -283,7 +292,9 @@ class Scene(QGraphicsScene):
                 self.add_enbullet(enemy)
 
     def add_enbullet(self, enemy):
-        """ Non-directional bullet fired from most enemies. """
+        """ Non-directional bullet fired from most enemies.
+        :param: enemy : Enemy class
+        """
 
         color = "2"
         if enemy.name == "Big mother":
@@ -316,17 +327,16 @@ class Scene(QGraphicsScene):
         """ Remove expired enBullets, Enemies and Explosions from the scene and lists. """
 
         items = self.items()
-        # TODO use isinstance
         for item in items:
-            if type(item).__name__ == "Explosion" and item.counter == 0:
+            if isinstance(item, Explosion) and item.counter == 0:
                 self.removeItem(item)
-            if type(item).__name__ == "Enemy" and item.hp == 0:
+            if isinstance(item, Enemy) and item.hp == 0:
                 self.removeItem(item)
-            if type(item).__name__ == "EnemyBullet" and item.active is False:
+            if isinstance(item, EnemyBullet) and item.active is False:
                 self.removeItem(item)
-            if type(item).__name__ == "BonusItem" and item.active is False:
+            if isinstance(item, BonusItem) and item.active is False:
                 self.removeItem(item)
-            if type(item).__name__ == "Message" and item.frames < 0:
+            if isinstance(item, FadeMessage) and item.frames < 0:
                 self.removeItem(item)
                 self.msg = None
         tmp = []
@@ -424,7 +434,15 @@ class Explosion(QGraphicsPixmapItem):
 class Enemy(QGraphicsPixmapItem):
     """ Currently four different types. """
 
-    def __init__(self, scr_w, scr_h, en_type=-1, en_x=-1, en_y=-1, parent=None):
+    def __init__(self, scr_w, scr_h, en_type=-1, start_x=-1, start_y=-1, parent=None):
+        """ Set up random enemy.
+         :param: screen width Integer
+         :param: screen height Integer
+         :param: en_type Integer
+         :param: en_x Integer
+         :param: en_y Integer
+         """
+
         QGraphicsPixmapItem.__init__(self, parent)
 
         entype = en_type
@@ -439,7 +457,7 @@ class Enemy(QGraphicsPixmapItem):
         self.name = ""
         self.scr_w = scr_w
         self.scr_h = scr_h
-        y = en_y
+        y = start_y
         if y < 0:
             y = random.randint(-100, 0)
         if entype < 30:
@@ -489,8 +507,7 @@ class Enemy(QGraphicsPixmapItem):
         d = random.randint(0, 1)
         if d == 0:
             self.dx = -1 * self.dx
-
-        x = en_x
+        x = start_x
         if x < 0:
             x = random.randint(10, self.scr_w - self.pixmap().width() - 10)
         self.setPos(x, y)
@@ -551,11 +568,13 @@ class EnemyDirectedBullet(QGraphicsPixmapItem):
 
 
 class EnemyBullet(QGraphicsPixmapItem):
-    bullet_speed = 4
+    """ Bullets fired downwards. """
 
     def __init__(self, x, y, color="2", parent=None):
+
         QGraphicsPixmapItem.__init__(self, parent)
         self.setPixmap(QPixmap(f"Images/bolt{color}.png"))
+        self.bullet_speed = 4
         self.frames = 0
         self.x = x - ENEMY_BULLET_X_OFFSET
         self.y = y
@@ -678,20 +697,14 @@ class BonusItem(QGraphicsPixmapItem):
 
         if self.name == "Alien transport":
             self.active = False
+            alien_transport_sound_effect.play()
             # windows replace aplay with start
-            # TODO subprocess.Popen(["aplay", "Sounds/NFF-alien-02.wav"])
-            '''effect = QSoundEffect()
-            effect.setSource(QUrl.fromLocalFile("Sounds/NFF-alien-02.wav"))
-            # possible bug: QSoundEffect::Infinite cannot be used in setLoopCount
-            effect.setLoopCount(-2)
-            effect.play()'''
 
         if self.name == "flare":
             if self.effect_pic_set is False:
                 self.setPixmap(self.flare)
                 self.effect_pic_set = True
-                # windows replace aplay with start
-                # TODO subprocess.Popen(["aplay", "Sounds/NFF-glittering.wav"])
+                glittering_sound_effect.play()
             self.setPos(self.x() - self.flareoffsets[0], self.y() - self.flareoffsets[1])
             self.flareoffsets = [0, 0]  # Initial offset to position flare over original pixmap
             # Resize gradually
@@ -712,8 +725,7 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPixmap(self.shield0)
                 self.effect_pic_set = True
                 # Windows replace aplay with start
-                # TODO subprocess.Popen(["aplay", "Sounds/NFF-ufo.wav"])
-
+                shield_sound_effect.play()
 
         if self.name == "slowed":
             if self.effect_pic_set is False:
@@ -721,8 +733,7 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPixmap(self.slowed[0])
                 self.setPos(self.x() - self.slowed[0].width() / 2, self.y() - self.slowed[0].height() / 2)
                 self.counter = 0
-                # Windows replace aplay with start
-                # TODO subprocess.Popen(["aplay", "Sounds/NFF-shooting-star-02.wav"])
+                slowed_sound_effect.play()
                 return
             self.counter += 1
             if self.counter >= len(self.slowed):
@@ -792,12 +803,12 @@ class Bullet(QGraphicsPixmapItem):
         self.frames = 0
 
     def game_update(self, keys_pressed, player):
-        """ Could not get QSound or QSoundEffect to work, using subprocess. """
+        """ """
 
         if not self.active:
             if Qt.Key.Key_Space in keys_pressed:
-                # Windows replace aplay with start
-                # TODO subprocess.Popen(["aplay", "Sounds/tir.wav"])
+                # Activate bullet
+                bullet_sound_effect.play()
                 self.setVisible(True)
                 self.active = True
                 self.setPos(player.x() + player.pixmap().width() / 2 - self.offset_x, player.y() + self.offset_y)
@@ -812,7 +823,7 @@ class Bullet(QGraphicsPixmapItem):
 
     def hit_enemy(self, enemy):
         """ Called on collision detect.
-        :param: enemy : Class """
+        :param: enemy : Enemy class """
 
         self.active = False
         self.setVisible(False)
