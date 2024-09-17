@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1348</width>
+    <width>1358</width>
     <height>837</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="2">
+    <item row="0" column="1">
      <widget class="QGraphicsView" name="graphicsView">
       <property name="enabled">
        <bool>true</bool>
@@ -43,35 +43,10 @@
     <item row="0" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
-       <string>Alien Invaders
-
-N for new game
-
-Space to Shoot
-
-Left Right Up Down arrows to move
-
-Bonus Items: Shield, Slow Alien Descent, Instant Destruct
-
-Try and avoid the Alien Transports
-
-Beware of the UFOs
-
-Do not let the Aliens land
-
-
-
-Created in python3 and PyQt5 by Colin Curtain</string>
+       <string/>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLabel" name="label_high_scores">
-      <property name="text">
-       <string>High Scores</string>
       </property>
      </widget>
     </item>
@@ -82,8 +57,8 @@ Created in python3 and PyQt5 by Colin Curtain</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1348</width>
-     <height>27</height>
+     <width>1358</width>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuGame">
@@ -91,6 +66,9 @@ Created in python3 and PyQt5 by Colin Curtain</string>
      <string>Game</string>
     </property>
     <addaction name="actionQuit"/>
+    <addaction name="actionNo_sound"/>
+    <addaction name="actionLow_volume"/>
+    <addaction name="actionHigh_volume"/>
    </widget>
    <addaction name="menuGame"/>
   </widget>
@@ -103,6 +81,21 @@ Created in python3 and PyQt5 by Colin Curtain</string>
   <action name="actionQuit">
    <property name="text">
     <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionNo_sound">
+   <property name="text">
+    <string>No sound</string>
+   </property>
+  </action>
+  <action name="actionLow_volume">
+   <property name="text">
+    <string>Low volume</string>
+   </property>
+  </action>
+  <action name="actionHigh_volume">
+   <property name="text">
+    <string>High volume</string>
    </property>
   </action>
  </widget>

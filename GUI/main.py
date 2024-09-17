@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1039, 837)
+        MainWindow.resize(1358, 837)
         MainWindow.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -26,12 +26,13 @@ class Ui_MainWindow(object):
         self.graphicsView.setObjectName("graphicsView")
         self.gridLayout.addWidget(self.graphicsView, 0, 1, 1, 1)
         self.label = QtWidgets.QLabel(parent=self.centralwidget)
+        self.label.setText("")
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label.setObjectName("label")
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1039, 27))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1358, 26))
         self.menubar.setObjectName("menubar")
         self.menuGame = QtWidgets.QMenu(parent=self.menubar)
         self.menuGame.setObjectName("menuGame")
@@ -43,7 +44,16 @@ class Ui_MainWindow(object):
         self.actionNew.setObjectName("actionNew")
         self.actionQuit = QtGui.QAction(parent=MainWindow)
         self.actionQuit.setObjectName("actionQuit")
+        self.actionNo_sound = QtGui.QAction(parent=MainWindow)
+        self.actionNo_sound.setObjectName("actionNo_sound")
+        self.actionLow_volume = QtGui.QAction(parent=MainWindow)
+        self.actionLow_volume.setObjectName("actionLow_volume")
+        self.actionHigh_volume = QtGui.QAction(parent=MainWindow)
+        self.actionHigh_volume.setObjectName("actionHigh_volume")
         self.menuGame.addAction(self.actionQuit)
+        self.menuGame.addAction(self.actionNo_sound)
+        self.menuGame.addAction(self.actionLow_volume)
+        self.menuGame.addAction(self.actionHigh_volume)
         self.menubar.addAction(self.menuGame.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -52,28 +62,12 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Invaders"))
-        self.label.setText(_translate("MainWindow", "Alien Invaders\n"
-"\n"
-"N for new game\n"
-"\n"
-"Space to Shoot\n"
-"\n"
-"Left Right Up Down arrows to move\n"
-"\n"
-"Bonus Items: Shield, Slow Alien Descent, Instant Destruct\n"
-"\n"
-"Try and avoid the Alien Transports\n"
-"\n"
-"Beware of the UFOs\n"
-"\n"
-"Do not let the Aliens land\n"
-"\n"
-"\n"
-"\n"
-"Created in python3 and PyQt5 by Colin Curtain"))
         self.menuGame.setTitle(_translate("MainWindow", "Game"))
         self.actionNew.setText(_translate("MainWindow", "New"))
         self.actionQuit.setText(_translate("MainWindow", "Quit"))
+        self.actionNo_sound.setText(_translate("MainWindow", "No sound"))
+        self.actionLow_volume.setText(_translate("MainWindow", "Low volume"))
+        self.actionHigh_volume.setText(_translate("MainWindow", "High volume"))
 
 
 if __name__ == "__main__":
