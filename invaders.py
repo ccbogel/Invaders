@@ -6,10 +6,11 @@
 https://gist.github.com/rogerallen/f06ba704ce3befb5459239e3fdf842c7
 """
 
-from PyQt6.QtCore import (Qt, QBasicTimer)
+from PyQt6.QtCore import (Qt, QBasicTimer, QUrl)
 from PyQt6.QtGui import (QBrush, QColor, QPainter, QPixmap, QImage, QFontDatabase, QFont, QPen)
 from PyQt6.QtWidgets import (QMainWindow, QApplication, QGraphicsItem, QGraphicsScene,
                              QGraphicsView, QGraphicsPixmapItem, QGraphicsTextItem)
+from PyQt6.QtMultimedia import QSoundEffect
 from GUI.main import Ui_MainWindow
 import random
 import subprocess
@@ -25,6 +26,14 @@ ENEMY_BULLET_X_OFFSET = 15  # half width of bullet
 EXPLOSION_FRAMES = 2
 FRAME_TIME_MS = 16  # ms/frame
 TEST = True
+
+
+bump_sound_effect = QSoundEffect()
+bump_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-bump.wav"))
+bump_sound_effect.setVolume(0.8)
+alert_sound_effect = QSoundEffect()
+alert_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-alert.wav"))
+alert_sound_effect.setVolume(0.8)
 
 
 class Scene(QGraphicsScene):
@@ -162,8 +171,7 @@ class Scene(QGraphicsScene):
             hit_item = hit_items[0]  # Only hit ONE item
             # Enemy is hit
             if hit_item and isinstance(hit_item, Enemy):
-                # subprocess.Popen(["aplay", "Sounds/NFF-robo-hit.wav"])  # windows replace aplay with start
-                # TODO subprocess.Popen(["aplay", "Sounds/NFF-bump.wav"])  # windows replace aplay with start
+                bump_sound_effect.play()
                 bullet.hit_enemy(hit_item)
                 if hit_item.hp == 0:
                     self.score += hit_item.score
@@ -247,8 +255,7 @@ class Scene(QGraphicsScene):
         """ All enemies defeated, new wave created.
         Add two extra enemies at each higher wave. """
 
-        # TODO p = subprocess.Popen(["aplay", "Sounds/NFF-alert.wav"])
-        # p.communicate()
+        alert_sound_effect.play()
         self.wave += 1
         items = self.items()
         for item in items:
@@ -673,6 +680,11 @@ class BonusItem(QGraphicsPixmapItem):
             self.active = False
             # windows replace aplay with start
             # TODO subprocess.Popen(["aplay", "Sounds/NFF-alien-02.wav"])
+            '''effect = QSoundEffect()
+            effect.setSource(QUrl.fromLocalFile("Sounds/NFF-alien-02.wav"))
+            # possible bug: QSoundEffect::Infinite cannot be used in setLoopCount
+            effect.setLoopCount(-2)
+            effect.play()'''
 
         if self.name == "flare":
             if self.effect_pic_set is False:
