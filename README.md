@@ -1,9 +1,6 @@
-# invaders
+# Invaders
 A simple invaders shoot em up game.Use the space bar to shoot and arrow keys to move. Don't let the invaders land.
 
-WORK IN PROGRESS.
-TODO. FIX SOME ERRORS
-TODO. Get Sounds working
 
 I have use a lot of resources from opengameart:
 
