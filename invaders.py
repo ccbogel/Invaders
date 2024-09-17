@@ -28,22 +28,32 @@ FRAME_TIME_MS = 16  # ms/frame
 TEST = True
 
 
-bump_sound_effect = QSoundEffect()
-bump_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-bump.wav"))
-#bump_sound_effect.setVolume(0.8)
-alert_sound_effect = QSoundEffect()
-alert_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-alert.wav"))
-#alert_sound_effect.setVolume(0.8)
-alien_transport_sound_effect = QSoundEffect()
-alien_transport_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-alien-02.wav"))
-glittering_sound_effect = QSoundEffect()
-glittering_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-glittering.wav"))
-shield_sound_effect = QSoundEffect()
-shield_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-ufo.wav"))
-slowed_sound_effect = QSoundEffect()
-slowed_sound_effect.setSource(QUrl.fromLocalFile("Sounds/NFF-shooting-star-02.wav"))
-bullet_sound_effect = QSoundEffect()
-bullet_sound_effect.setSource(QUrl.fromLocalFile("Sounds/tir.wav"))
+volume = 0.5
+bump_sound = QSoundEffect()
+bump_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-bump.wav"))
+bump_sound.setVolume(volume)
+alert_sound = QSoundEffect()
+alert_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-alert.wav"))
+alert_sound.setVolume(volume)
+alien_transport_sound = QSoundEffect()
+alien_transport_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-alien-02.wav"))
+alien_transport_sound.setVolume(volume)
+glittering_sound = QSoundEffect()
+glittering_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-glittering.wav"))
+glittering_sound.setVolume(volume)
+shield_sound = QSoundEffect()
+shield_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-ufo.wav"))
+shield_sound.setVolume(volume)
+slowed_sound = QSoundEffect()
+slowed_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-shooting-star-02.wav"))
+slowed_sound.setVolume(volume)
+bullet_sound = QSoundEffect()
+bullet_sound.setSource(QUrl.fromLocalFile("Sounds/tir.wav"))
+bullet_sound.setVolume(volume)
+
+introduction_msg = "Alien Invaders\n\nN for new game\n\nSpace to Shoot\n\nLeft Right Up Down arrows to move\n\n" \
+                   "Bonus Items: Shield, Slow Alien Descent, Instant Destruct\n\nTry and avoid the Alien Transports\n\n" \
+                   "Beware of the UFOs\n\nDo not let the Aliens land\n\n\n\nCreated by Colin Curtain"
 
 
 class Scene(QGraphicsScene):
@@ -88,7 +98,7 @@ class Scene(QGraphicsScene):
         self.addItem(self.score_item)
         self.player = Player(self.width(), self.height())
         self.enemies = []
-        self.enbullets = []  # Enemey bullets
+        self.enbullets = []  # Enemy bullets
         self.msg = None
         self.bonuses = []
         self.bullets = [Bullet(PLAYER_BULLET_X_OFFSET, PLAYER_BULLET_Y, self.width(), self.height())]
@@ -132,7 +142,6 @@ class Scene(QGraphicsScene):
             hit_items = self.collidingItems(enemy)
             for hit_item in hit_items:
                 if isinstance(hit_item, Player):
-                    #if type(hit).__name__ == "Player":
                     self.lost = True
                     time.sleep(2)
 
@@ -181,7 +190,7 @@ class Scene(QGraphicsScene):
             hit_item = hit_items[0]  # Only hit ONE item
             # Enemy is hit
             if hit_item and isinstance(hit_item, Enemy):
-                bump_sound_effect.play()
+                bump_sound.play()
                 bullet.hit_enemy(hit_item)
                 if hit_item.hp == 0:
                     self.score += hit_item.score
@@ -265,7 +274,7 @@ class Scene(QGraphicsScene):
         """ All enemies defeated, new wave created.
         Add two extra enemies at each higher wave. """
 
-        alert_sound_effect.play()
+        alert_sound.play()
         self.wave += 1
         items = self.items()
         for item in items:
@@ -697,14 +706,14 @@ class BonusItem(QGraphicsPixmapItem):
 
         if self.name == "Alien transport":
             self.active = False
-            alien_transport_sound_effect.play()
+            alien_transport_sound.play()
             # windows replace aplay with start
 
         if self.name == "flare":
             if self.effect_pic_set is False:
                 self.setPixmap(self.flare)
                 self.effect_pic_set = True
-                glittering_sound_effect.play()
+                glittering_sound.play()
             self.setPos(self.x() - self.flareoffsets[0], self.y() - self.flareoffsets[1])
             self.flareoffsets = [0, 0]  # Initial offset to position flare over original pixmap
             # Resize gradually
@@ -725,7 +734,7 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPixmap(self.shield0)
                 self.effect_pic_set = True
                 # Windows replace aplay with start
-                shield_sound_effect.play()
+                shield_sound.play()
 
         if self.name == "slowed":
             if self.effect_pic_set is False:
@@ -733,7 +742,7 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPixmap(self.slowed[0])
                 self.setPos(self.x() - self.slowed[0].width() / 2, self.y() - self.slowed[0].height() / 2)
                 self.counter = 0
-                slowed_sound_effect.play()
+                slowed_sound.play()
                 return
             self.counter += 1
             if self.counter >= len(self.slowed):
@@ -808,7 +817,7 @@ class Bullet(QGraphicsPixmapItem):
         if not self.active:
             if Qt.Key.Key_Space in keys_pressed:
                 # Activate bullet
-                bullet_sound_effect.play()
+                bullet_sound.play()
                 self.setVisible(True)
                 self.active = True
                 self.setPos(player.x() + player.pixmap().width() / 2 - self.offset_x, player.y() + self.offset_y)
@@ -860,8 +869,19 @@ class MainWindow(QMainWindow):
         self.ui.graphicsView.setCacheMode(QGraphicsView.CacheModeFlag.CacheBackground)
         self.ui.graphicsView.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
         self.ui.graphicsView.hide()
-        # self.ui.label.setText("")
+        self.ui.label.setText(introduction_msg)
+        self.ui.actionNo_sound.triggered.connect(self.action_no_sound)
         self.show()
+
+    def action_no_sound(self):
+        volume = 0.0
+        bump_sound.setVolume(volume)
+        alert_sound.setVolume(volume)
+        alien_transport_sound.setVolume(volume)
+        glittering_sound.setVolume(volume)
+        shield_sound.setVolume(volume)
+        slowed_sound.setVolume(volume)
+        bullet_sound.setVolume(volume)
 
     def keyPressEvent(self, event):
 
@@ -900,3 +920,4 @@ if __name__ == '__main__':
     width, height = screen_resolution.width(), screen_resolution.height()
     window = MainWindow(width, height)
     sys.exit(app.exec())
+
