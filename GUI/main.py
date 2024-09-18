@@ -48,12 +48,11 @@ class Ui_MainWindow(object):
         self.actionNo_sound.setObjectName("actionNo_sound")
         self.actionLow_volume = QtGui.QAction(parent=MainWindow)
         self.actionLow_volume.setObjectName("actionLow_volume")
-        self.actionHigh_volume = QtGui.QAction(parent=MainWindow)
-        self.actionHigh_volume.setObjectName("actionHigh_volume")
+        self.actionSound = QtGui.QAction(parent=MainWindow)
+        self.actionSound.setObjectName("actionSound")
         self.menuGame.addAction(self.actionQuit)
         self.menuGame.addAction(self.actionNo_sound)
-        self.menuGame.addAction(self.actionLow_volume)
-        self.menuGame.addAction(self.actionHigh_volume)
+        self.menuGame.addAction(self.actionSound)
         self.menubar.addAction(self.menuGame.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -67,7 +66,7 @@ class Ui_MainWindow(object):
         self.actionQuit.setText(_translate("MainWindow", "Quit"))
         self.actionNo_sound.setText(_translate("MainWindow", "No sound"))
         self.actionLow_volume.setText(_translate("MainWindow", "Low volume"))
-        self.actionHigh_volume.setText(_translate("MainWindow", "High volume"))
+        self.actionSound.setText(_translate("MainWindow", "Sound"))
 
 
 if __name__ == "__main__":

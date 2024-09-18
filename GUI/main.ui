@@ -67,8 +67,7 @@
     </property>
     <addaction name="actionQuit"/>
     <addaction name="actionNo_sound"/>
-    <addaction name="actionLow_volume"/>
-    <addaction name="actionHigh_volume"/>
+    <addaction name="actionSound"/>
    </widget>
    <addaction name="menuGame"/>
   </widget>
@@ -93,9 +92,9 @@
     <string>Low volume</string>
    </property>
   </action>
-  <action name="actionHigh_volume">
+  <action name="actionSound">
    <property name="text">
-    <string>High volume</string>
+    <string>Sound</string>
    </property>
   </action>
  </widget>
