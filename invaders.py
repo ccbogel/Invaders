@@ -7,7 +7,7 @@ https://gist.github.com/rogerallen/f06ba704ce3befb5459239e3fdf842c7
 """
 
 from PyQt6.QtCore import (Qt, QBasicTimer, QUrl)
-from PyQt6.QtGui import (QBrush, QColor, QPainter, QPixmap, QImage, QFontDatabase, QFont, QPen)
+from PyQt6.QtGui import (QBrush, QColor, QPainter, QPixmap, QImage, QFontDatabase, QFont, QPen, QTextOption)
 from PyQt6.QtWidgets import (QMainWindow, QApplication, QGraphicsItem, QGraphicsScene,
                              QGraphicsView, QGraphicsPixmapItem, QGraphicsTextItem)
 from PyQt6.QtMultimedia import QSoundEffect
@@ -28,7 +28,7 @@ FRAME_TIME_MS = 16  # ms/frame
 TEST = True
 
 
-volume = 0.5
+volume = 0.7
 bump_sound = QSoundEffect()
 bump_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-bump.wav"))
 bump_sound.setVolume(volume)
@@ -50,9 +50,11 @@ slowed_sound.setVolume(volume)
 bullet_sound = QSoundEffect()
 bullet_sound.setSource(QUrl.fromLocalFile("Sounds/tir.wav"))
 bullet_sound.setVolume(volume)
+sound_on = False
 
 introduction_msg = "Alien Invaders\n\nN for new game\n\nSpace to Shoot\n\nLeft Right Up Down arrows to move\n\n" \
-                   "Bonus Items: Shield, Slow Alien Descent, Instant Destruct\n\nTry and avoid the Alien Transports\n\n" \
+                   "Bonus Items: Shield, Slow Alien Descent, Instant Destruct\n\n" \
+                   "Try and avoid the Alien Transports\n\n" \
                    "Beware of the UFOs\n\nDo not let the Aliens land\n\n\n\nCreated by Colin Curtain"
 
 
@@ -190,7 +192,8 @@ class Scene(QGraphicsScene):
             hit_item = hit_items[0]  # Only hit ONE item
             # Enemy is hit
             if hit_item and isinstance(hit_item, Enemy):
-                bump_sound.play()
+                if sound_on:
+                    bump_sound.play()
                 bullet.hit_enemy(hit_item)
                 if hit_item.hp == 0:
                     self.score += hit_item.score
@@ -203,7 +206,7 @@ class Scene(QGraphicsScene):
                     hit_item.effect is True and hit_item.name in ("flare", "dreams") and \
                     isinstance(hit_items[1], Enemy):
                 bullet.hit_enemy(hit_items[1])
-                if hits[1].hp == 0:
+                if hit_items[1].hp == 0:
                     self.score += hit_items[1].score
                 enemy_pos = (hit_items[1].pos())
                 explode = Explosion(enemy_pos.x(), enemy_pos.y())
@@ -266,15 +269,15 @@ class Scene(QGraphicsScene):
 
         # Check for new wave, countdown Msg frames til new wave
         if len(self.enemies) == 0 and self.msg is None:
-            self.msg = FadeMessage()
-            self.msg.setPlainText(f"Wave {self.wave + 1}")
+            self.msg = FadeMessage(f"Wave {self.wave + 1}")
             self.addItem(self.msg)
 
     def enemy_wave_setup(self):
         """ All enemies defeated, new wave created.
         Add two extra enemies at each higher wave. """
 
-        alert_sound.play()
+        if sound_on:
+            alert_sound.play()
         self.wave += 1
         items = self.items()
         for item in items:
@@ -328,9 +331,14 @@ class Scene(QGraphicsScene):
         else:
             msg += "You Lost"
         msg += "\nPress n for new game"
-        self.msg = FadeMessage()
+        self.msg = FadeMessage(msg)
         self.msg.setPlainText(msg)
         self.addItem(self.msg)
+        items = self.items()
+        for item in items:
+            if not isinstance(item, FadeMessage):
+                self.removeItem(item)
+
 
     def cleanup_items(self):
         """ Remove expired enBullets, Enemies and Explosions from the scene and lists. """
@@ -375,13 +383,19 @@ class FadeMessage(QGraphicsTextItem):
 
     frames = 255
 
-    def init(self, parent=None):
+    def init(self, text, parent=None):
         super(QGraphicsTextItem).__init__(parent)
 
-        self.setPlainText("")
-        self.setFont(QFont("Robotica", 40))
+        self.setTextWidth(900)
+        # Centering does not work
+        text_option = QTextOption()
+        text_option.setWrapMode(QTextOption.WrapMode.NoWrap)
+        text_option.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.document().setDefaultTextOption(text_option)
         self.setDefaultTextColor(QColor(255, 255, 0))
         self.setPos(200, 300)
+        self.setPlainText(text)
+        self.setFont(QFont("Robotica", 40))
         self.frames = 255
 
     def game_update(self):
@@ -706,14 +720,15 @@ class BonusItem(QGraphicsPixmapItem):
 
         if self.name == "Alien transport":
             self.active = False
-            alien_transport_sound.play()
-            # windows replace aplay with start
+            if sound_on:
+                alien_transport_sound.play()
 
         if self.name == "flare":
             if self.effect_pic_set is False:
                 self.setPixmap(self.flare)
                 self.effect_pic_set = True
-                glittering_sound.play()
+                if sound_on:
+                    glittering_sound.play()
             self.setPos(self.x() - self.flareoffsets[0], self.y() - self.flareoffsets[1])
             self.flareoffsets = [0, 0]  # Initial offset to position flare over original pixmap
             # Resize gradually
@@ -733,8 +748,8 @@ class BonusItem(QGraphicsPixmapItem):
             if self.effect_pic_set is False:
                 self.setPixmap(self.shield0)
                 self.effect_pic_set = True
-                # Windows replace aplay with start
-                shield_sound.play()
+                if sound_on:
+                    shield_sound.play()
 
         if self.name == "slowed":
             if self.effect_pic_set is False:
@@ -742,7 +757,8 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPixmap(self.slowed[0])
                 self.setPos(self.x() - self.slowed[0].width() / 2, self.y() - self.slowed[0].height() / 2)
                 self.counter = 0
-                slowed_sound.play()
+                if sound_on:
+                    slowed_sound.play()
                 return
             self.counter += 1
             if self.counter >= len(self.slowed):
@@ -817,7 +833,8 @@ class Bullet(QGraphicsPixmapItem):
         if not self.active:
             if Qt.Key.Key_Space in keys_pressed:
                 # Activate bullet
-                bullet_sound.play()
+                if sound_on:
+                    bullet_sound.play()
                 self.setVisible(True)
                 self.active = True
                 self.setPos(player.x() + player.pixmap().width() / 2 - self.offset_x, player.y() + self.offset_y)
@@ -871,20 +888,19 @@ class MainWindow(QMainWindow):
         self.ui.graphicsView.hide()
         self.ui.label.setText(introduction_msg)
         self.ui.actionNo_sound.triggered.connect(self.action_no_sound)
+        self.ui.actionSound.triggered.connect(self.action__sound)
+        self.ui.actionQuit.triggered.connect(self.exit_app)
         self.show()
 
     def action_no_sound(self):
-        volume = 0.0
-        bump_sound.setVolume(volume)
-        alert_sound.setVolume(volume)
-        alien_transport_sound.setVolume(volume)
-        glittering_sound.setVolume(volume)
-        shield_sound.setVolume(volume)
-        slowed_sound.setVolume(volume)
-        bullet_sound.setVolume(volume)
+        global sound_on
+        sound_on = False
+
+    def action__sound(self):
+        global sound_on
+        sound_on = True
 
     def keyPressEvent(self, event):
-
         if event.key() == Qt.Key.Key_N:
             self.new_game()
         if event.key() == Qt.Key.Key_Q:
