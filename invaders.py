@@ -30,7 +30,9 @@ TEST = True
 
 volume = 0.7
 bump_sound = QSoundEffect()
-bump_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-bump.wav"))
+#bump_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-bump.wav"))
+# Shoretened to reduce latency: ffmpeg -i NFF-bump.wav -ss 00:00:00.000 -t 00:00:00.250 -c copy NFF-bump-short.wav
+bump_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-bump-short.wav"))
 bump_sound.setVolume(volume)
 alert_sound = QSoundEffect()
 alert_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-alert.wav"))
