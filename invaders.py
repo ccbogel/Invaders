@@ -30,7 +30,6 @@ TEST = True
 
 volume = 0.7
 bump_sound = QSoundEffect()
-#bump_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-bump.wav"))
 # Shortened to reduce latency: ffmpeg -i NFF-bump.wav -ss 00:00:00.000 -t 00:00:00.250 -c copy NFF-bump-short.wav
 bump_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-bump-short.wav"))
 bump_sound.setVolume(volume)
@@ -76,6 +75,7 @@ class Scene(QGraphicsScene):
         self.game_over = False
         self.lost = False
         self.lost_counter = 0
+        self.invaded = False  # Used for invasion graphics
         self.bullets = []
         self.explosions = []
         self.keys_pressed = None
@@ -98,6 +98,7 @@ class Scene(QGraphicsScene):
         self.clear()
         self.game_over = False
         self.lost = False
+        self.invaded = False
         self.player_hit = False
         self.wave = 0
         self.score = 0
@@ -157,6 +158,7 @@ class Scene(QGraphicsScene):
             enemy.game_update()
             if enemy.y() > self.height():
                 self.lost = True
+                self.invaded = True
         for explosion in self.explosions:
             explosion.game_update()
 
@@ -337,13 +339,30 @@ class Scene(QGraphicsScene):
             msg += "You Lost"
         msg += "\nPress n for new game"
         self.msg = FadeMessage(msg)
-        self.msg.setPlainText(msg)
         self.addItem(self.msg)
         items = self.items()
         for item in items:
             if not isinstance(item, FadeMessage):
                 self.removeItem(item)
-
+        if not self.invaded:
+            return
+        alien = QGraphicsPixmapItem()
+        alien.setPixmap(QPixmap("Images/alien-1295498_200.png"))
+        alien.setPos(300, 500)
+        self.addItem(alien)
+        fungus = QGraphicsPixmapItem()
+        fungus.setPixmap(QPixmap("Images/fungus-576077_200.png"))
+        fungus.setPos(100, 450)
+        self.addItem(fungus)
+        fungus = QGraphicsPixmapItem()
+        fungus.setPixmap(QPixmap("Images/fungus-576077_200.png"))
+        fungus.setPos(650, 420)
+        self.addItem(fungus)
+        msg += "\nThe aliens have invaded"
+        self.msg = FadeMessage(msg)
+        self.msg.r = 0
+        self.msg.y = 100
+        self.addItem(self.msg)
 
     def cleanup_items(self):
         """ Remove expired enBullets, Enemies and Explosions from the scene and lists. """
@@ -384,24 +403,27 @@ class Scene(QGraphicsScene):
 
 
 class FadeMessage(QGraphicsTextItem):
-    """ Text is set using setPlainText method. """
+    """ Fading message. """
 
     frames = 255
+    r = 255
+    g = 255
+    b = 0
+    y = 250
 
-    def init(self, text, parent=None):
+    def init(self, text="", parent=None):
         super(QGraphicsTextItem).__init__(parent)
-
+        self.frames = 255
         self.setTextWidth(900)
         # Centering does not work
         text_option = QTextOption()
         text_option.setWrapMode(QTextOption.WrapMode.NoWrap)
         text_option.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.document().setDefaultTextOption(text_option)
-        self.setDefaultTextColor(QColor(255, 255, 0))
-        self.setPos(200, 300)
+        self.setDefaultTextColor(QColor(self.r, self.g, self.b))
+        self.setPos(150, self.y)
         self.setPlainText(text)
         self.setFont(QFont("Robotica", 40))
-        self.frames = 255
 
     def game_update(self):
         self.frames -= 1
@@ -409,8 +431,8 @@ class FadeMessage(QGraphicsTextItem):
         if alpha < 0:
             alpha = 0
         self.setFont(QFont("Robotica", 40))
-        self.setDefaultTextColor(QColor(255, 255, 0, alpha))
-        self.setPos(200, 300)
+        self.setDefaultTextColor(QColor(self.r, self.g, self.b, alpha))
+        self.setPos(150, self.y)
 
 
 class Score(QGraphicsTextItem):
