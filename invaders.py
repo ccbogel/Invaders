@@ -51,8 +51,9 @@ shield_sound.setVolume(volume)
 slowed_sound = QSoundEffect()
 slowed_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-shooting-star-02.wav"))
 slowed_sound.setVolume(volume)
+# ffmpeg -i tir.wav -ss 00:00:00.000 -t 00:00:00.300 -c copy shoot.wav
 bullet_sound = QSoundEffect()
-bullet_sound.setSource(QUrl.fromLocalFile("Sounds/tir.wav"))
+bullet_sound.setSource(QUrl.fromLocalFile("Sounds/shoot.wav"))
 bullet_sound.setVolume(volume)
 sound_on = False
 
