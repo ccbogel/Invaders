@@ -26,5 +26,9 @@ https://wallpaperscraft.com/download/starry_sky_shine_glitter_118976/1152x864
 
 http://www.designyourway.net/blog/resources/46-dark-seamless-and-tileable-patterns-for-your-websites-background/
 
-Not used yet: https://opengameart.org/content/large-nature-background
+https://pixabay.com/vectors/alien-big-eyes-monster-print-1295498/
+Image by OpenClipart-Vectors from Pixabay
+
+https://pixabay.com/vectors/fungus-mushroom-nature-natural-576077/
+Image by OpenClipart-Vectors from Pixabay
 
