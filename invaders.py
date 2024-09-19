@@ -31,7 +31,7 @@ TEST = True
 volume = 0.7
 bump_sound = QSoundEffect()
 #bump_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-bump.wav"))
-# Shoretened to reduce latency: ffmpeg -i NFF-bump.wav -ss 00:00:00.000 -t 00:00:00.250 -c copy NFF-bump-short.wav
+# Shortened to reduce latency: ffmpeg -i NFF-bump.wav -ss 00:00:00.000 -t 00:00:00.250 -c copy NFF-bump-short.wav
 bump_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-bump-short.wav"))
 bump_sound.setVolume(volume)
 alert_sound = QSoundEffect()
@@ -41,10 +41,12 @@ alien_transport_sound = QSoundEffect()
 alien_transport_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-alien-02.wav"))
 alien_transport_sound.setVolume(volume)
 glittering_sound = QSoundEffect()
-glittering_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-glittering.wav"))
+# ffmpeg -i NFF-glittering.wav -ss 00:00:00.000 -t 00:00:02.000 -c copy NFF-glittering-short.wav
+glittering_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-glittering-short.wav"))
 glittering_sound.setVolume(volume)
 shield_sound = QSoundEffect()
-shield_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-ufo.wav"))
+# ffmpeg -i NFF-ufo.wav -ss 00:00:00.000 -t 00:00:02.500 -c copy NFF-ufo-short.wav
+shield_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-ufo-short.wav"))
 shield_sound.setVolume(volume)
 slowed_sound = QSoundEffect()
 slowed_sound.setSource(QUrl.fromLocalFile("Sounds/NFF-shooting-star-02.wav"))
