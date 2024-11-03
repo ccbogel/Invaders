@@ -1,0 +1,11 @@
+venv/
+dist
+.eggs
+.pybuild/
+*.egg-info
+*/__pycache__
+__pycache__
+build
+.DS_Store
+.vscode
+*.pyc
