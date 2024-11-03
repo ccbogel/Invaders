@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 """ Game inspired from pyqt5 code snippet from Roger Allen
 https://gist.github.com/rogerallen/f06ba704ce3befb5459239e3fdf842c7
 """
 
+import base64
+import os.path
 from PyQt6.QtCore import (Qt, QBasicTimer, QUrl, QByteArray)
 from PyQt6.QtGui import (QBrush, QColor, QPainter, QPixmap, QImage, QFontDatabase, QFont, QPen, QTextOption)
 from PyQt6.QtWidgets import (QMainWindow, QApplication, QGraphicsScene,
                              QGraphicsView, QGraphicsPixmapItem, QGraphicsTextItem)
 from PyQt6.QtMultimedia import QSoundEffect
-import os.path
 import random
 import sys
 import time
-import faulthandler
+#import faulthandler
 
 from invaders.GUI.main_window import Ui_MainWindow
 from invaders.Images.base64_images import *
+from invaders.Sounds.base64_sounds import *
 
 PLAYER_SPEED = 5  # pix/frame
 PLAYER_BULLET_X_OFFSET = 15  # half width of bullet
@@ -30,33 +31,40 @@ EXPLOSION_FRAMES = 2
 FRAME_TIME_MS = 16  # ms/frame
 
 path = os.path.abspath(os.path.dirname(__file__))
+home = os.path.expanduser('~')
+resources_path = os.path.join(home, ".invaders")
+
 volume = 0.7
 bump_sound = QSoundEffect()
-# Shortened to reduce latency: ffmpeg -i NFF-bump.wav -ss 00:00:00.000 -t 00:00:00.250 -c copy NFF-bump-short.wav
-bump_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF-bump-short.wav")))
+bump_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "NFF_bump_short.wav")))
+#bump_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_bump_short.wav")))
 bump_sound.setVolume(volume)
 alert_sound = QSoundEffect()
-alert_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF-alert.wav")))
+alert_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "NFF_alert.wav")))
+#alert_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_alert.wav")))
 alert_sound.setVolume(volume)
 alien_transport_sound = QSoundEffect()
-alien_transport_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF-alien-02.wav")))
+alien_transport_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "NFF_alien-02.wav")))
+#alien_transport_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_alien-02.wav")))
 alien_transport_sound.setVolume(volume)
 glittering_sound = QSoundEffect()
-# ffmpeg -i NFF-glittering.wav -ss 00:00:00.000 -t 00:00:02.000 -c copy NFF-glittering-short.wav
-glittering_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF-glittering-short.wav")))
+glittering_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "Sounds/NFF_glittering_short.wav")))
+#glittering_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_glittering_short.wav")))
 glittering_sound.setVolume(volume)
 shield_sound = QSoundEffect()
-# ffmpeg -i NFF-ufo.wav -ss 00:00:00.000 -t 00:00:02.500 -c copy NFF-ufo-short.wav
-shield_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF-ufo-short.wav")))
+shield_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "NFF_ufo_short.wav")))
+#shield_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_ufo_short.wav")))
 shield_sound.setVolume(volume)
 slowed_sound = QSoundEffect()
-slowed_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF-shooting-star-02.wav")))
+slowed_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "NFF_shooting_star_02.wav")))
+#slowed_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_shooting_star_02.wav")))
 slowed_sound.setVolume(volume)
-# ffmpeg -i tir.wav -ss 00:00:00.000 -t 00:00:00.300 -c copy shoot.wav
 bullet_sound = QSoundEffect()
-bullet_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/shoot.wav")))
+bullet_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "shoot.wav")))
+#bullet_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/shoot.wav")))
 bullet_sound.setVolume(volume)
-sound_on = False
+
+sound_on = True
 
 introduction_msg = "Alien Invaders\n\nN for new game\n\nSpace to Shoot\n\nLeft Right Up Down arrows to move\n\n" \
                    "Bonus Items: Shield, Slow Alien Descent, Instant Destruct\n\n" \
@@ -1043,8 +1051,26 @@ stylesheet = "* {font-family:Robotica; font-size:16px;}\n\
 QWidget {color: #eeeeee; background-color: #303030;}"
 
 if __name__ == '__main__':
+
+    # Set up folder with sound effects
+    #path = os.path.abspath(os.path.dirname(__file__))
+    home = os.path.expanduser('~')
+    if not os.path.exists(home + '/.invaders'):
+        try:
+            os.mkdir(home + '/.invaders')
+        except Exception as e:
+            print(f"Cannot add .invaders folder to home directory\n{e}")
+            raise
+    sounds = {"NFF_alert": NFF_alert, "NFF_alien_02": NFF_alien_02, "NFF_bump_short": NFF_bump_short,
+              "NFF_glittering_short": NFF_glittering_short, "NFF_robo_hit": NFF_robo_hit,
+              "NFF_shooting_star_02": NFF_shooting_star_02, "NFF_ufo_short": NFF_ufo_short, "shoot": shoot}
+    for sound in sounds.keys():
+        decode_string = base64.b64decode(sounds[sound])
+        with open(os.path.join(resources_path, f"{sound}.wav"), "wb") as sound_file:
+            sound_file.write(decode_string)
+
     app = QApplication(sys.argv)
-    faulthandler.enable()
+    #faulthandler.enable()
     QFontDatabase.addApplicationFont(os.path.join(path, "Images/Robotica.ttf"))
     app.setStyleSheet(stylesheet)
     window = MainWindow()
