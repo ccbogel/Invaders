@@ -7,14 +7,6 @@ cd to the main folder and type:
 `python3 -m invaders`
 
 
-## Using pyinstaller
-
-pyinstaller -w -n "Invaders" --onefile invaders/__main__.py
-
-This create the INITAL spec file
-
-Edit the spec file to include data resources
-
 
 ## Resources
 
@@ -46,3 +38,12 @@ Image by OpenClipart-Vectors from Pixabay
 http://www.noiseforfun.com/2012-sound-effects/in-motion/
 
 
+## Make exe
+
+From outer Invaders folder:
+
+pyinstaller -w -n "Invaders" --onefile invaders/__main__.py
+
+## Issues
+
+Sounds do not work at the moment
