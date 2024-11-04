@@ -4,7 +4,7 @@
 """
 Create an output python file called base64_images.py
 with converted pngs into base64
-The output file is used as a helper file in QualCoder
+The output file is used as a helper
 
 """
 
@@ -13,8 +13,7 @@ import os
 
 
 class CreateHelperFile:
-    """ This helps to get around icon data failing to load depending on where qualcoder
-     is called from.  Important for use with pyinstaller as accessing data files does not work well.
+    """ Important for use with pyinstaller as accessing data files does not work well.
     """
 
     def __init__(self):
