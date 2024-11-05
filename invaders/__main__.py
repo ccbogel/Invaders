@@ -12,6 +12,7 @@ from PyQt6.QtGui import (QBrush, QColor, QPainter, QPixmap, QImage, QFontDatabas
 from PyQt6.QtWidgets import (QMainWindow, QApplication, QGraphicsScene,
                              QGraphicsView, QGraphicsPixmapItem, QGraphicsTextItem)
 from PyQt6.QtMultimedia import QSoundEffect
+import winsound
 import random
 import sys
 import time
@@ -34,35 +35,13 @@ path = os.path.abspath(os.path.dirname(__file__))
 home = os.path.expanduser('~')
 resources_path = os.path.join(home, ".invaders")
 
-volume = 0.7
-bump_sound = QSoundEffect()
-bump_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "NFF_bump_short.wav")))
-#bump_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_bump_short.wav")))
-bump_sound.setVolume(volume)
-alert_sound = QSoundEffect()
-alert_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "NFF_alert.wav")))
-#alert_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_alert.wav")))
-alert_sound.setVolume(volume)
-alien_transport_sound = QSoundEffect()
-alien_transport_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "NFF_alien-02.wav")))
-#alien_transport_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_alien-02.wav")))
-alien_transport_sound.setVolume(volume)
-glittering_sound = QSoundEffect()
-glittering_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "Sounds/NFF_glittering_short.wav")))
-#glittering_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_glittering_short.wav")))
-glittering_sound.setVolume(volume)
-shield_sound = QSoundEffect()
-shield_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "NFF_ufo_short.wav")))
-#shield_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_ufo_short.wav")))
-shield_sound.setVolume(volume)
-slowed_sound = QSoundEffect()
-slowed_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "NFF_shooting_star_02.wav")))
-#slowed_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/NFF_shooting_star_02.wav")))
-slowed_sound.setVolume(volume)
+''' Keeping for reference to an older apporoach to do sounds
 bullet_sound = QSoundEffect()
 bullet_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "shoot.wav")))
 #bullet_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/shoot.wav")))
 bullet_sound.setVolume(volume)
+shoot1 = base64.b64decode(shoot)
+'''
 
 sound_on = True
 
@@ -214,7 +193,8 @@ class Scene(QGraphicsScene):
             # Enemy is hit
             if hit_item and isinstance(hit_item, Enemy):
                 if sound_on:
-                    bump_sound.play()
+                    #bump_sound.play()
+                    winsound.PlaySound(os.path.join(resources_path, "NFF_bump_short.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
                 bullet.hit_enemy(hit_item)
                 if hit_item.hp == 0:
                     self.score += hit_item.score
@@ -299,7 +279,9 @@ class Scene(QGraphicsScene):
         Add extra enemies at each higher wave. """
 
         if sound_on:
-            alert_sound.play()
+            #alert_sound.play()
+            winsound.PlaySound(os.path.join(resources_path, "NFF_alert.wav"),
+                               winsound.SND_ASYNC | winsound.SND_ALIAS)
         self.wave += 1
         items = self.items()
         for item in items:
@@ -670,7 +652,6 @@ class EnemyBullet(QGraphicsPixmapItem):
         pm = QPixmap()
         pm.loadFromData(QByteArray.fromBase64(bolt2), "png")
         self.setPixmap(pm)
-        #self.setPixmap(QPixmap(f"Images/bolt{color}.png"))
         self.bullet_speed = 4
         self.frames = 0
         self.x = x - ENEMY_BULLET_X_OFFSET
@@ -835,14 +816,17 @@ class BonusItem(QGraphicsPixmapItem):
         if self.name == "Alien transport":
             self.active = False
             if sound_on:
-                alien_transport_sound.play()
+                #alien_transport_sound.play()
+                winsound.PlaySound(os.path.join(resources_path, "NFF_alien_02.wav"),
+                                   winsound.SND_ASYNC | winsound.SND_ALIAS)
 
         if self.name == "flare":
             if self.effect_pic_set is False:
                 self.setPixmap(self.flare)
                 self.effect_pic_set = True
                 if sound_on:
-                    glittering_sound.play()
+                    #glittering_sound.play()
+                    winsound.PlaySound(os.path.join(resources_path, "NFF_glittering_short.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
             self.setPos(self.x() - self.flareoffsets[0], self.y() - self.flareoffsets[1])
             self.flareoffsets = [0, 0]  # Initial offset to position flare over original pixmap
             # Resize gradually
@@ -850,7 +834,6 @@ class BonusItem(QGraphicsPixmapItem):
             if self.flarereduction < 5:
                 self.active = False
                 return
-
             w = int(self.flarereduction / 100 * self.flare.width())
             h = int(self.flarereduction / 100 * self.flare.height())
             self.flareoffsets[0] = self.flare.width() - w
@@ -864,7 +847,8 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPixmap(self.shield0)
                 self.effect_pic_set = True
                 if sound_on:
-                    shield_sound.play()
+                    #shield_sound.play()
+                    winsound.PlaySound(os.path.join(resources_path, "NFF_robo_hit.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
 
         if self.name == "slowed":
             if self.effect_pic_set is False:
@@ -873,7 +857,8 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPos(self.x() - self.slowed[0].width() / 2, self.y() - self.slowed[0].height() / 2)
                 self.counter = 0
                 if sound_on:
-                    slowed_sound.play()
+                    #slowed_sound.play()
+                    winsound.PlaySound(os.path.join(resources_path, "NFF_shooting_star_02.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
                 return
             self.counter += 1
             if self.counter >= len(self.slowed):
@@ -904,7 +889,6 @@ class Player(QGraphicsPixmapItem):
         pm = QPixmap()
         pm.loadFromData(QByteArray.fromBase64(DurrrSpaceShip_50), "png")
         self.setPixmap(pm)
-        #self.setPixmap(QPixmap(os.path.join(path, "Images/DurrrSpaceShip_50.png")))
         self.scr_w = scr_w
         self.scr_h = scr_h
         self.setPos((self.scr_w - self.pixmap().width()) / 2,
@@ -936,13 +920,13 @@ class Player(QGraphicsPixmapItem):
 
 
 class Bullet(QGraphicsPixmapItem):
+    """ Player bullet. """
 
     def __init__(self, offset_x, offset_y, scr_w, scr_h, parent=None):
         QGraphicsPixmapItem.__init__(self, parent)
         pm = QPixmap()
         pm.loadFromData(QByteArray.fromBase64(bolt1), "png")
         self.setPixmap(pm)
-        #self.setPixmap(QPixmap(os.path.join(path, "Images/bolt1.png")))
         self.offset_x = offset_x
         self.offset_y = offset_y
         self.scr_w = scr_w
@@ -951,13 +935,14 @@ class Bullet(QGraphicsPixmapItem):
         self.frames = 0
 
     def game_update(self, keys_pressed, player):
-        """ """
 
         if not self.active:
             if Qt.Key.Key_Space in keys_pressed:
                 # Activate bullet
                 if sound_on:
-                    bullet_sound.play()
+                    # Cannot play asynchronously from memory. See shoot1 base64 example at start of file
+                    # winsound.PlaySound(shoot1, winsound.SND_MEMORY, winsound.SND_ASYNC)
+                    winsound.PlaySound(os.path.join(resources_path, "shoot.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
                 self.setVisible(True)
                 self.active = True
                 self.setPos(player.x() + player.pixmap().width() / 2 - self.offset_x, player.y() + self.offset_y)
@@ -1052,8 +1037,7 @@ QWidget {color: #eeeeee; background-color: #303030;}"
 
 if __name__ == '__main__':
 
-    # Set up folder with sound effects
-    #path = os.path.abspath(os.path.dirname(__file__))
+    # Set up .invaders folder containing sound effects, roboto.ttf and scores
     home = os.path.expanduser('~')
     if not os.path.exists(home + '/.invaders'):
         try:
@@ -1066,8 +1050,9 @@ if __name__ == '__main__':
               "NFF_shooting_star_02": NFF_shooting_star_02, "NFF_ufo_short": NFF_ufo_short, "shoot": shoot}
     for sound in sounds.keys():
         decode_string = base64.b64decode(sounds[sound])
-        with open(os.path.join(resources_path, f"{sound}.wav"), "wb") as sound_file:
-            sound_file.write(decode_string)
+        if not os.path.exists(os.path.join(resources_path, f"{sound}.wav")):
+            with open(os.path.join(resources_path, f"{sound}.wav"), "wb") as sound_file:
+                sound_file.write(decode_string)
 
     app = QApplication(sys.argv)
     #faulthandler.enable()
