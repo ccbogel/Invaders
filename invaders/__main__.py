@@ -11,7 +11,7 @@ from PyQt6.QtCore import (Qt, QBasicTimer, QUrl, QByteArray)
 from PyQt6.QtGui import (QBrush, QColor, QPainter, QPixmap, QImage, QFontDatabase, QFont, QPen, QTextOption)
 from PyQt6.QtWidgets import (QMainWindow, QApplication, QGraphicsScene,
                              QGraphicsView, QGraphicsPixmapItem, QGraphicsTextItem)
-from PyQt6.QtMultimedia import QSoundEffect
+# from PyQt6.QtMultimedia import QSoundEffect
 import winsound
 import random
 import sys
@@ -20,6 +20,7 @@ import time
 
 from invaders.GUI.main_window import Ui_MainWindow
 from invaders.Images.base64_images import *
+from invaders.Images.base64_ttf import *
 from invaders.Sounds.base64_sounds import *
 
 PLAYER_SPEED = 5  # pix/frame
@@ -1053,10 +1054,14 @@ if __name__ == '__main__':
         if not os.path.exists(os.path.join(resources_path, f"{sound}.wav")):
             with open(os.path.join(resources_path, f"{sound}.wav"), "wb") as sound_file:
                 sound_file.write(decode_string)
+    decode_string = base64.b64decode(Robotica)
+    if not os.path.exists(os.path.join(resources_path, "Robotica.ttf")):
+        with open(os.path.join(resources_path, "Robotica.ttf"), "wb") as sound_file:
+            sound_file.write(decode_string)
 
     app = QApplication(sys.argv)
     #faulthandler.enable()
-    QFontDatabase.addApplicationFont(os.path.join(path, "Images/Robotica.ttf"))
+    QFontDatabase.addApplicationFont(os.path.join(resources_path, "Robotica.ttf"))
     app.setStyleSheet(stylesheet)
     window = MainWindow()
     sys.exit(app.exec())
