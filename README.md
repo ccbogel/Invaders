@@ -1,5 +1,7 @@
 # Invaders
 A simple invaders shoot em up game. Use the space bar to shoot and arrow keys to move. Don't let the invaders land.
+Currently, only works for Windows as the sound playing is done through winsound. There is probably a way to change that with Linux / macOS.
+I did try QSoundEffect, but had issues with that also.
 
 ## To run from command line/Terminal 
 cd to the main folder and type:
@@ -42,8 +44,5 @@ http://www.noiseforfun.com/2012-sound-effects/in-motion/
 
 From outer Invaders folder:
 
-pyinstaller -w -n "Invaders" --onefile invaders/__main__.py
+pyinstaller -w -n "Invaders" --onefile invaders/\_\_main\_\_.py
 
-## Issues
-
-Sounds do not work at the moment
