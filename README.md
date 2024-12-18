@@ -5,9 +5,13 @@ I did try QSoundEffect, but had issues with that also.
 
 ## To run from command line in a virtual environment
 cd to the main folder and type:
+
 `py -m venv env`
+
 `env\Scripts\activate`
+
 `py -m pip install -r requirements.txt`
+
 `py -m invaders`
 
 To deactivate environment
