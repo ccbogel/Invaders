@@ -3,10 +3,16 @@ A simple invaders shoot em up game. Use the space bar to shoot and arrow keys to
 Currently, only works for Windows as the sound playing is done through winsound. There is probably a way to change that with Linux / macOS.
 I did try QSoundEffect, but had issues with that also.
 
-## To run from command line/Terminal 
+## To run from command line in a virtual environment
 cd to the main folder and type:
+`py -m venv env`
+`env\Scripts\activate`
+`py -m pip install -r requirements.txt`
+`py -m invaders`
 
-`python3 -m invaders`
+To deactivate environment
+
+`deactivate`
 
 
 
