@@ -7,16 +7,19 @@ https://gist.github.com/rogerallen/f06ba704ce3befb5459239e3fdf842c7
 
 import base64
 import os.path
+import platform
 from PyQt6.QtCore import (Qt, QBasicTimer, QUrl, QByteArray)
 from PyQt6.QtGui import (QBrush, QColor, QPainter, QPixmap, QImage, QFontDatabase, QFont, QPen, QTextOption)
 from PyQt6.QtWidgets import (QMainWindow, QApplication, QGraphicsScene,
                              QGraphicsView, QGraphicsPixmapItem, QGraphicsTextItem)
-# from PyQt6.QtMultimedia import QSoundEffect
-import winsound
+# from PyQt6.QtMultimedia import QSoundEffect  # This module did not work well.
+try:
+    import winsound
+except Exception as e:
+    print(e)
 import random
 import sys
 import time
-#import faulthandler
 
 from invaders.GUI.main_window import Ui_MainWindow
 from invaders.Images.base64_images import *
@@ -35,8 +38,9 @@ FRAME_TIME_MS = 16  # ms/frame
 path = os.path.abspath(os.path.dirname(__file__))
 home = os.path.expanduser('~')
 resources_path = os.path.join(home, ".invaders")
+os_platform = platform.system()
 
-''' Keeping for reference to an older apporoach to do sounds
+''' Keeping for reference to an older approach to do sounds
 bullet_sound = QSoundEffect()
 bullet_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "shoot.wav")))
 #bullet_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/shoot.wav")))
@@ -194,8 +198,8 @@ class Scene(QGraphicsScene):
             # Enemy is hit
             if hit_item and isinstance(hit_item, Enemy):
                 if sound_on:
-                    #bump_sound.play()
-                    winsound.PlaySound(os.path.join(resources_path, "NFF_bump_short.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                    if os_platform == "Windows":
+                        winsound.PlaySound(os.path.join(resources_path, "NFF_bump_short.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
                 bullet.hit_enemy(hit_item)
                 if hit_item.hp == 0:
                     self.score += hit_item.score
@@ -280,8 +284,8 @@ class Scene(QGraphicsScene):
         Add extra enemies at each higher wave. """
 
         if sound_on:
-            #alert_sound.play()
-            winsound.PlaySound(os.path.join(resources_path, "NFF_alert.wav"),
+            if os_platform == "Windows":
+                winsound.PlaySound(os.path.join(resources_path, "NFF_alert.wav"),
                                winsound.SND_ASYNC | winsound.SND_ALIAS)
         self.wave += 1
         items = self.items()
@@ -341,8 +345,10 @@ class Scene(QGraphicsScene):
                 self.removeItem(item)
         if not self.invaded:
             return
+        pm = QPixmap()
+        pm.loadFromData(QByteArray.fromBase64(alien_1295498_200), "png")
         alien = QGraphicsPixmapItem()
-        alien.setPixmap(QPixmap(os.path.join(path, "Images/alien-1295498_200.png")))
+        alien.setPixmap(pm)
         alien.setPos(300, 500)
         self.addItem(alien)
         msg += "\nThe aliens have invaded"
@@ -583,7 +589,7 @@ class Enemy(QGraphicsPixmapItem):
             self.dx = -1 * self.dx
         x = start_x
         if x < 0:
-            x = random.randint(10, self.scr_w - self.pixmap().width() - 10)
+            x = random.randint(10, int(self.scr_w - self.pixmap().width() - 10))
         self.setPos(x, y)
 
     def game_update(self):
@@ -817,8 +823,8 @@ class BonusItem(QGraphicsPixmapItem):
         if self.name == "Alien transport":
             self.active = False
             if sound_on:
-                #alien_transport_sound.play()
-                winsound.PlaySound(os.path.join(resources_path, "NFF_alien_02.wav"),
+                if os_platform == "Windows":
+                    winsound.PlaySound(os.path.join(resources_path, "NFF_alien_02.wav"),
                                    winsound.SND_ASYNC | winsound.SND_ALIAS)
 
         if self.name == "flare":
@@ -826,8 +832,8 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPixmap(self.flare)
                 self.effect_pic_set = True
                 if sound_on:
-                    #glittering_sound.play()
-                    winsound.PlaySound(os.path.join(resources_path, "NFF_glittering_short.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                    if os_platform == "Windows":
+                        winsound.PlaySound(os.path.join(resources_path, "NFF_glittering_short.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
             self.setPos(self.x() - self.flareoffsets[0], self.y() - self.flareoffsets[1])
             self.flareoffsets = [0, 0]  # Initial offset to position flare over original pixmap
             # Resize gradually
@@ -848,8 +854,8 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPixmap(self.shield0)
                 self.effect_pic_set = True
                 if sound_on:
-                    #shield_sound.play()
-                    winsound.PlaySound(os.path.join(resources_path, "NFF_robo_hit.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                    if os_platform == "Windows":
+                        winsound.PlaySound(os.path.join(resources_path, "NFF_robo_hit.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
 
         if self.name == "slowed":
             if self.effect_pic_set is False:
@@ -858,8 +864,8 @@ class BonusItem(QGraphicsPixmapItem):
                 self.setPos(self.x() - self.slowed[0].width() / 2, self.y() - self.slowed[0].height() / 2)
                 self.counter = 0
                 if sound_on:
-                    #slowed_sound.play()
-                    winsound.PlaySound(os.path.join(resources_path, "NFF_shooting_star_02.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                    if os_platform == "Windows":
+                        winsound.PlaySound(os.path.join(resources_path, "NFF_shooting_star_02.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
                 return
             self.counter += 1
             if self.counter >= len(self.slowed):
@@ -943,7 +949,8 @@ class Bullet(QGraphicsPixmapItem):
                 if sound_on:
                     # Cannot play asynchronously from memory. See shoot1 base64 example at start of file
                     # winsound.PlaySound(shoot1, winsound.SND_MEMORY, winsound.SND_ASYNC)
-                    winsound.PlaySound(os.path.join(resources_path, "shoot.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                    if os_platform == "Windows":
+                        winsound.PlaySound(os.path.join(resources_path, "shoot.wav"), winsound.SND_ASYNC | winsound.SND_ALIAS)
                 self.setVisible(True)
                 self.active = True
                 self.setPos(player.x() + player.pixmap().width() / 2 - self.offset_x, player.y() + self.offset_y)
