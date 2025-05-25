@@ -40,14 +40,6 @@ home = os.path.expanduser('~')
 resources_path = os.path.join(home, ".invaders")
 os_platform = platform.system()
 
-''' Keeping for reference to an older approach to do sounds
-bullet_sound = QSoundEffect()
-bullet_sound.setSource(QUrl.fromLocalFile(os.path.join(resources_path, "shoot.wav")))
-#bullet_sound.setSource(QUrl.fromLocalFile(os.path.join(path, "Sounds/shoot.wav")))
-bullet_sound.setVolume(volume)
-shoot1 = base64.b64decode(shoot)
-'''
-
 sound_on = True
 
 introduction_msg = "Alien Invaders\n\nN for new game\n\nSpace to Shoot\n\nLeft Right Up Down arrows to move\n\n" \
@@ -226,12 +218,18 @@ class Scene(QGraphicsScene):
                 # An anti-bonus item if Alien transport hit
                 if hit_item.name == "Alien transport" and self.msg is None:
                     for i in range(0, 5):
-                        enemy = Enemy(self.width(), self.height(), 24, hit_item.x(), hit_item.y())
+                        enemy = Enemy(self.width(), self.height(), self.wave, 24, hit_item.x(), hit_item.y())
                         self.enemies.append(enemy)
                         self.addItem(enemy)
 
         # BonusItem
         for bonus in self.bonuses:
+            # Chck oif enemy stransport collides with Player
+            if bonus.name == "Alien transport":
+                hit_items = self.collidingItems(bonus)
+                for hit_item in hit_items:
+                    if isinstance(hit_item, Player):
+                        self.lost = True
             # Check if Flare collides with Enemies
             if bonus.effect and bonus.name == "flare":
                 hit_items = self.collidingItems(bonus)
@@ -258,7 +256,7 @@ class Scene(QGraphicsScene):
 
         self.score_item.game_update(self.wave, self.score)
         self.cleanup_items()
-        self.maybe_add_enbullets()
+        self.activate_enemy_enbullets()
 
         # Check for game end
         if self.lost:
@@ -275,9 +273,8 @@ class Scene(QGraphicsScene):
 
         # Check for new wave, countdown Msg frames till new wave
         if len(self.enemies) == 0 and self.msg is None:
-            self.msg = FadeMessage(f"Wave {self.wave}")
+            self.msg = FadeMessage(f"Wave {self.wave + 1}")
             self.addItem(self.msg)
-
 
     def enemy_wave_setup(self):
         """ All enemies defeated, new wave created.
@@ -298,11 +295,11 @@ class Scene(QGraphicsScene):
         self.bonuses = []
         self.enbullets = []
         for new_enemy in range(3 + int(self.wave * 1.3)):
-            enemy = Enemy(self.width(), self.height())
+            enemy = Enemy(self.width(), self.height(), self.wave)
             self.enemies.append(enemy)
             self.addItem(enemy)
 
-    def maybe_add_enbullets(self):
+    def activate_enemy_enbullets(self):
         """ Small chance to fire a bullet from each enemy """
 
         for enemy in self.enemies:
@@ -480,20 +477,28 @@ class Explosion(QGraphicsPixmapItem):
 class Enemy(QGraphicsPixmapItem):
     """ Currently four different types. """
 
-    def __init__(self, scr_w, scr_h, en_type=-1, start_x=-1, start_y=-1, parent=None):
+    def __init__(self, scr_w, scr_h, wave, en_type=-1, start_x=-1, start_y=-1, parent=None):
         """ Set up random enemy.
-         :param: screen width Integer
-         :param: screen height Integer
-         :param: en_type Integer
-         :param: en_x Integer
-         :param: en_y Integer
+        Args:
+             screen width Integer
+             screen height Integer
+             wave : Integer
+             en_type Integer
+             en_x Integer
+             en_y Integer
          """
 
         QGraphicsPixmapItem.__init__(self, parent)
 
         entype = en_type
+        max_int = 89
+        min_int = 0
+        if wave > 3:
+            max_int = 100
+        if wave > 6:
+            min_int = 25
         if entype == -1:
-            entype = random.randint(0, 100)
+            entype = random.randint(min_int, max_int)
         self.pic = []
         self.counter = 0
         self.dx = 0.4
@@ -507,6 +512,19 @@ class Enemy(QGraphicsPixmapItem):
         if y < 0:
             y = random.randint(-100, 0)
         if entype < 30:
+            self.name = "Space mine"
+            self.dx = 1 + random.randint(0, 6) / 10
+            self.dy = 0.45
+            pm = QPixmap()
+            pm.loadFromData(QByteArray.fromBase64(Spaceship_Drakir6), "png")
+            self.pic.append(pm)
+            #self.pic.append(QPixmap(os.path.join(path, "Images/Spaceship-Drakir6.png")))
+            pm = QPixmap()
+            pm.loadFromData(QByteArray.fromBase64(Spaceship_Drakir6a), "png")
+            self.pic.append(pm)
+            #self.pic.append(QPixmap(os.path.join(path, "Images/Spaceship-Drakir6a.png")))
+
+        if not self.name and entype < 50:
             self.dy = 0.15 + random.randint(0, 4) / 20
             self.dx = 0.35 + random.randint(0, 8) / 10
             self.name = "Dangly tentacles"
@@ -518,7 +536,7 @@ class Enemy(QGraphicsPixmapItem):
             pm = QPixmap()
             pm.loadFromData(QByteArray.fromBase64(Spaceship_Drakir2), "png")
             self.pic.append(pm)
-        if 30 <= entype < 55:
+        if not self.name and entype < 70:
             self.name = "Lots a tentacles"
             self.dy = 0.15
             self.dx = 1.9 + random.randint(0, 4) / 10
@@ -532,7 +550,7 @@ class Enemy(QGraphicsPixmapItem):
             pm.loadFromData(QByteArray.fromBase64(Spaceship_Drakir7a), "png")
             self.pic.append(pm)
             #self.pic.append(QPixmap(os.path.join(path, "Images/Spaceship-Drakir7a.png")))
-        if 55 <= entype < 60:
+        if not self.name and entype < 90:
             self.name = "Big mother"
             self.hp = 3
             self.dy = 0.19
@@ -554,19 +572,8 @@ class Enemy(QGraphicsPixmapItem):
             self.pic.append(pm)
             #self.pic.append(QPixmap(os.path.join(path, "Images/Spaceship-Drakir3.png")))
             self.score = 30
-        if 60 <= entype < 90:
-            self.name = "Space mine"
-            self.dx = 1 + random.randint(0, 6) / 10
-            self.dy = 0.45
-            pm = QPixmap()
-            pm.loadFromData(QByteArray.fromBase64(Spaceship_Drakir6), "png")
-            self.pic.append(pm)
-            #self.pic.append(QPixmap(os.path.join(path, "Images/Spaceship-Drakir6.png")))
-            pm = QPixmap()
-            pm.loadFromData(QByteArray.fromBase64(Spaceship_Drakir6a), "png")
-            self.pic.append(pm)
-            #self.pic.append(QPixmap(os.path.join(path, "Images/Spaceship-Drakir6a.png")))
-        if entype >= 90:
+
+        if not self.name and entype >= 90:
             self.score = 50
             self.name = "Mother UFO"
             y = -80
@@ -1065,9 +1072,7 @@ if __name__ == '__main__':
     if not os.path.exists(os.path.join(resources_path, "Robotica.ttf")):
         with open(os.path.join(resources_path, "Robotica.ttf"), "wb") as sound_file:
             sound_file.write(decode_string)
-
     app = QApplication(sys.argv)
-    #faulthandler.enable()
     QFontDatabase.addApplicationFont(os.path.join(resources_path, "Robotica.ttf"))
     app.setStyleSheet(stylesheet)
     window = MainWindow()
